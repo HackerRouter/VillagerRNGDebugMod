@@ -1,9 +1,14 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "me.fallenbreath.template_mod.mixins",
+  "package": "hackerrouter.villagerrngdebug.mixins",
   "compatibilityLevel": "{{COMPATIBILITY_LEVEL}}",
+  "refmap": "villagerrngdebug-refmap.json",
   "mixins": [
+    "MixinLivingEntity",
+    "MixinCommands",
+    "MixinFrostWalker",
+    "MixinFrostedIce",
     "MinecraftServerMixin"
   ],
   "client": [

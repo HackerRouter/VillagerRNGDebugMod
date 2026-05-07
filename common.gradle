@@ -75,8 +75,8 @@ dependencies {
 //	}
 }
 
-String MIXIN_CONFIG_PATH = 'template_mod.mixins.json'
-String LANG_DIR = 'assets/template_mod/lang'
+String MIXIN_CONFIG_PATH = 'villagerrngdebug.mixins.json'
+String LANG_DIR = 'assets/villagerrngdebug/lang'
 JavaVersion JAVA_COMPATIBILITY
 if (mcVersion >= 260000) {
 	JAVA_COMPATIBILITY = JavaVersion.VERSION_25

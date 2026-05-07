@@ -4,13 +4,13 @@
   "version": "${version}",
 
   "name": "${name}",
-  "description": "Template for my fabric mods",
+  "description": "villagerrngdebug",
   "authors": [
-    "Fallen_Breath"
+    "HackerRouter"
   ],
   "contact": {
     "homepage": "https://modrinth.com",
-    "sources": "https://github.com/Fallen-Breath/fabric-mod-template"
+    "sources": "https://github.com/HackerRouter/VillagerRNGDebugMod"
   },
   "license": "LGPL-3.0",
 
@@ -19,11 +19,11 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "me.fallenbreath.template_mod.TemplateMod"
+      "hackerrouter.villagerrngdebug.VillagerRNGDebugMod"
     ]
   },
   "mixins": [
-    "template_mod.mixins.json"
+    "villagerrngdebug.mixins.json"
   ],
 
   "depends": {
