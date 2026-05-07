@@ -1,4 +1,4 @@
-## VillagerRNGDebugMod
+## VillagerRNGDebugMod for 1.17.1
 
 Target level after upgrade (1~4, level 5 has no enchanted book): 2
 
