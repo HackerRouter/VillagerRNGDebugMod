@@ -101,7 +101,7 @@ public class RNGLogger {
     public static void setChatLogEnabled(UUID playerUUID, boolean enabled) {
         if (enabled) {
             chatLogEnabledPlayers.add(playerUUID);
-            // 记录开启时的游戏 tick，用于相对计时
+            // Record the game tick when logging is enabled, used for relative timing
             if (server != null) {
                 playerStartTicks.put(playerUUID, server.overworld().getGameTime());
             }
@@ -121,11 +121,11 @@ public class RNGLogger {
             if (chatLogEnabledPlayers.contains(playerUUID)) {
                 Villager tracked = VillagerRNGTracker.getTracked(playerUUID);
                 if (tracked != null && tracked.getUUID().equals(villager.getUUID())) {
-                    // 计算相对 tick（从 log 开启时开始）
+                    // Calculate relative tick (from when logging was enabled)
                     long startTick = playerStartTicks.getOrDefault(playerUUID, gameTick);
                     long relativeTick = gameTick - startTick;
                     
-                    // 使用 Minecraft 的文本组件系统添加颜色和可点击功能
+                    // Use Minecraft's text component system to add color and clickable functionality
                     net.minecraft.network.chat.MutableComponent message = 
                         new TextComponent("[")
                         .append(new TextComponent("T=" + relativeTick).withStyle(style -> style.withColor(net.minecraft.ChatFormatting.AQUA)))
@@ -145,7 +145,7 @@ public class RNGLogger {
                                     String.format("0x%012X", seedBefore)))
                                 .withHoverEvent(new net.minecraft.network.chat.HoverEvent(
                                     net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT,
-                                    new TextComponent("点击复制")))))
+                                    new TextComponent("Click to copy")))))
                         .append("  seed_post=")
                         .append(new TextComponent(String.format("0x%012X", seedAfter))
                             .withStyle(style -> style
@@ -155,7 +155,7 @@ public class RNGLogger {
                                     String.format("0x%012X", seedAfter)))
                                 .withHoverEvent(new net.minecraft.network.chat.HoverEvent(
                                     net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT,
-                                    new TextComponent("点击复制")))));
+                                    new TextComponent("Click to copy")))));
                     
                     player.sendMessage(message, playerUUID);
                 }

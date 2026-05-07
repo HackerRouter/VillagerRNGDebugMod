@@ -50,9 +50,9 @@ public enum CallSite {
     // Villager.java
     RAID_CHECK,
     TRADE_REWARD_XP,
-    // updateTrades → addOffersFromItemListings: nextInt(listings.length) 槽位选择（仅候选数>2时）
+    // updateTrades → addOffersFromItemListings: nextInt(listings.length) slot selection (only when candidates > 2)
     LEVEL_UP_SLOT_SELECT,
-    // updateTrades → addOffersFromItemListings → getOffer: 交易参数随机（附魔种类/等级/价格/颜色等）
+    // updateTrades → addOffersFromItemListings → getOffer: trade parameter randomization (enchantment type/level/price/color etc.)
     LEVEL_UP_OFFER_PARAM,
     BREED_TYPE,
     

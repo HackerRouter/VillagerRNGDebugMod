@@ -33,7 +33,7 @@ public class TrackedRandom extends Random {
     private long lastGameTick = -1;
     private CallSite currentSite = CallSite.UNKNOWN;
 
-    // StackWalker 用于检测调用来源
+    // StackWalker used to detect call origin
     private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     public TrackedRandom(LivingEntity owner) {
@@ -50,7 +50,7 @@ public class TrackedRandom extends Random {
     }
 
     private CallSite detectCallSite(String method, Object bound) {
-        // 通过检测game tick变化自动重置计数器
+        // Automatically reset counter by detecting game tick changes
         long currentTick = owner.level.getGameTime();
         if (currentTick != lastGameTick) {
             lastGameTick = currentTick;
@@ -58,8 +58,8 @@ public class TrackedRandom extends Random {
         }
         tickCallCount++;
 
-        // 使用 StackWalker 检测调用来源
-        // 运行时使用 intermediary 映射（class_xxxx, method_xxxx）
+        // Use StackWalker to detect call origin
+        // At runtime uses intermediary mappings (class_xxxx, method_xxxx)
         CallSite detected = STACK_WALKER.walk(frames -> {
             java.util.List<StackWalker.StackFrame> frameList = frames.collect(java.util.stream.Collectors.toList());
             java.util.Optional<CallSite> result = frameList.stream()
@@ -67,19 +67,26 @@ public class TrackedRandom extends Random {
                     String className = frame.getClassName();
                     String methodName = frame.getMethodName();
 
-                    // 跳过 TrackedRandom 自身和 RNGLogger 的栈帧
+                    // Skip stack frames from TrackedRandom itself and RNGLogger
                     if (className.contains("TrackedRandom") || className.contains("RNGLogger")) {
                         return (CallSite) null;
                     }
 
+                    // === FrostWalkerEnchantment (MUST be before Mob.baseTick to avoid misidentification) ===
+                    // FrostWalkerEnchantment.onEntityMoved → Mth.nextInt(random, 60, 120) → nextInt(61)
+                    // Signature: bound=61 and FrostWalkerEnchantment present in stack (class_1887 / buk)
+                    if (className.contains("FrostWalker") || className.contains("class_1887") || className.endsWith(".buk")) {
+                        return CallSite.FROST_WALK;
+                    }
+
                     // === Villager trade/level-up (must be before RAID_CHECK since they're called from within customServerAiStep) ===
                     // VillagerTrades$ItemListing.getOffer - LEVEL_UP_OFFER_PARAM (method_7246)
-                    // 交易参数随机：附魔种类/等级/价格/颜色等，由各 ItemListing 实现类内部调用
+                    // Trade parameter randomization: enchantment type/level/price/color etc., called internally by ItemListing implementations
                     if (methodName.equals("getOffer") || methodName.equals("method_7246")) {
                         return CallSite.LEVEL_UP_OFFER_PARAM;
                     }
                     // AbstractVillager.addOffersFromItemListings - LEVEL_UP_SLOT_SELECT (method_19170)
-                    // 槽位选择随机：nextInt(listings.length)，仅当候选数>2时消耗（如图书管理员1~4级各3~4个候选）
+                    // Slot selection randomization: nextInt(listings.length), only consumed when candidates > 2 (e.g. librarian levels 1-4 have 3-4 candidates each)
                     if (methodName.equals("addOffersFromItemListings") || methodName.equals("method_19170")) {
                         return CallSite.LEVEL_UP_SLOT_SELECT;
                     }
@@ -108,10 +115,6 @@ public class TrackedRandom extends Random {
                     if ((className.endsWith(".Villager") || className.endsWith(".class_1646")) && 
                         (methodName.equals("getBreedOffspring") || methodName.equals("method_5613"))) {
                         return CallSite.BREED_TYPE;
-                    }
-                    // FrostWalkerEnchantment - FROST_WALK
-                    if (className.contains("FrostWalker") || className.contains("class_1887")) {
-                        return CallSite.FROST_WALK;
                     }
                     // === LivingEntity (specific methods first, before baseTick) ===
                     // LivingEntity.markHurt - MARK_HURT (method_5785)
@@ -204,7 +207,7 @@ public class TrackedRandom extends Random {
                 .filter(site -> site != null)
                 .findFirst();
             
-            // 如果未识别，打印栈帧用于调试
+            // If unrecognized, print stack frames for debugging
             if (!result.isPresent()) {
                 StringBuilder sb = new StringBuilder("[UNKNOWN_CALLSITE] ");
                 frameList.stream()
@@ -233,6 +236,16 @@ public class TrackedRandom extends Random {
         int result = super.nextInt(bound);
         long seedAfter = VillagerRNGTracker.getSeed(this);
         lastResult = result;
+        // bound=61 uniquely corresponds to FrostWalkerEnchantment.onEntityMoved → Mth.nextInt(random,60,120)
+        // StackWalker cannot reliably match FrostWalker class name in this scenario (obfuscated to buk), use parameter signature instead
+        if (bound == 61) {
+            Level level = owner.level;
+            long gameTick = level.getGameTime();
+            if (gameTick != lastGameTick) { lastGameTick = gameTick; tickCallCount = 0; }
+            tickCallCount++;
+            RNGLogger.log(owner, CallSite.FROST_WALK, "nextInt", bound, result, seedBefore, seedAfter, ++callCount, gameTick);
+            return result;
+        }
         logCall("nextInt", bound, result, seedBefore, seedAfter);
         return result;
     }
