@@ -69,6 +69,11 @@ public class TrackedRandom extends Random {
                         (methodName.equals("increaseMerchantCareer") || methodName.equals("method_16918"))) {
                         return CallSite.LEVEL_UP_SLOT_SELECT;
                     }
+                    // Brain AI behaviors (path finding, random walk, etc.) — must be before customServerAiStep
+                    if (className.contains(".ai.behavior.") || className.contains(".ai.util.")
+                            || className.contains(".ai.sensing.") || className.contains(".Brain")) {
+                        return CallSite.BRAIN_AI;
+                    }
                     if ((className.endsWith(".Villager") || className.endsWith(".class_1646")) &&
                         (methodName.equals("customServerAiStep") || methodName.equals("method_5958"))) {
                         return CallSite.RAID_CHECK;
@@ -153,12 +158,7 @@ public class TrackedRandom extends Random {
                 .findFirst();
             
             if (!result.isPresent()) {
-                StringBuilder sb = new StringBuilder("[UNKNOWN_CALLSITE] ");
-                frameList.stream()
-                    .filter(f -> !f.getClassName().contains("TrackedRandom") && !f.getClassName().contains("RNGLogger"))
-                    .limit(12)
-                    .forEach(f -> sb.append(f.getClassName()).append(".").append(f.getMethodName()).append(" | "));
-                System.out.println(sb.toString());
+                // unknown callsite — silently ignored
             }
             
             return result.orElse(CallSite.UNKNOWN);

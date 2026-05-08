@@ -14,7 +14,7 @@ public enum CallSite {
     AMBIENT_SOUND,
 
     // Villager
-    RAID_CHECK, TRADE_REWARD_XP,
+    RAID_CHECK, BRAIN_AI, TRADE_REWARD_XP,
     LEVEL_UP_SLOT_SELECT,  // nextInt(listings.length) slot selection
     LEVEL_UP_OFFER_PARAM,  // trade parameter randomization
     BREED_TYPE,

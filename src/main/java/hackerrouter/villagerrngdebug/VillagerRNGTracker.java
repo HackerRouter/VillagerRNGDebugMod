@@ -18,11 +18,7 @@ public class VillagerRNGTracker {
         try {
             seedField = Random.class.getDeclaredField("seed");
             seedField.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            System.err.println("[VillagerRNGDebug] WARN: Random.seed field not found");
-            seedField = null;
         } catch (Exception e) {
-            System.err.println("[VillagerRNGDebug] WARN: Cannot access Random.seed (Java 16+ module restrictions). RNG manipulation disabled.");
             seedField = null;
         }
     }
@@ -113,13 +109,9 @@ public class VillagerRNGTracker {
 
     public static void wrapRandom(Villager villager) {
         Random current = villager.getRandom();
-        System.out.println("[DEBUG] wrapRandom called for Villager@" + villager.getUUID() + ", current random type: " + current.getClass().getName());
         if (!(current instanceof TrackedRandom)) {
             ((RandomAccessor) villager).setRandom(new TrackedRandom(villager));
-            System.out.println("[DEBUG] Wrapped random successfully");
             RNGLogger.log(String.format("[WRAP] Wrapped random for Villager@%s", villager.getUUID()));
-        } else {
-            System.out.println("[DEBUG] Random already wrapped");
         }
     }
 }

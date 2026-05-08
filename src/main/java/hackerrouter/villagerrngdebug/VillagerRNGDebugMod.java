@@ -32,7 +32,6 @@ public class VillagerRNGDebugMod implements ModInitializer
 		MOD_NAME = metadata.getName();
 		MOD_VERSION = metadata.getVersion().getFriendlyString();
 		
-		RNGLogger.init();
 		LOGGER.info("VillagerRNG Debug Mod initialized");
 	}
 }

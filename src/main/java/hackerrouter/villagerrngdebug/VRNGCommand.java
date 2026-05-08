@@ -40,6 +40,9 @@ public class VRNGCommand {
             .then(Commands.literal("frosted_ice")
                 .then(Commands.literal("on").executes(VRNGCommand::frostedIceOn))
                 .then(Commands.literal("off").executes(VRNGCommand::frostedIceOff)))
+            .then(Commands.literal("update_trades")
+                .then(Commands.literal("on").executes(VRNGCommand::updateTradesOn))
+                .then(Commands.literal("off").executes(VRNGCommand::updateTradesOff)))
         );
     }
 
@@ -175,12 +178,26 @@ public class VRNGCommand {
     private static int frostedIceOn(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         FrostWalkLogger.setEnabled(true, ctx.getSource().getServer(), player.getUUID());
+        ctx.getSource().sendSuccess(new TextComponent("Frosted Ice logging disabled"), false);
         return 1;
     }
 
     private static int frostedIceOff(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         FrostWalkLogger.setEnabled(false, ctx.getSource().getServer(), player.getUUID());
+        ctx.getSource().sendSuccess(new TextComponent("Frosted Ice logging disabled"), false);
+        return 1;
+    }
+
+    private static int updateTradesOn(CommandContext<CommandSourceStack> ctx) {
+        RNGLogger.setUpdateTradesLogEnabled(true);
+        ctx.getSource().sendSuccess(new TextComponent("Update Trades stack logging enabled"), false);
+        return 1;
+    }
+
+    private static int updateTradesOff(CommandContext<CommandSourceStack> ctx) {
+        RNGLogger.setUpdateTradesLogEnabled(false);
+        ctx.getSource().sendSuccess(new TextComponent("Update Trades stack logging disabled"), false);
         return 1;
     }
 }

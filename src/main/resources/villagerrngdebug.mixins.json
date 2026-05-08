@@ -5,6 +5,7 @@
   "compatibilityLevel": "{{COMPATIBILITY_LEVEL}}",
   "refmap": "villagerrngdebug-refmap.json",
   "mixins": [
+    "MixinAbstractVillager",
     "MixinLivingEntity",
     "MixinVillagerLoad",
     "MixinCommands",
