@@ -1,23 +1,3 @@
-/*
- * This file is part of the VillagerRNGDebugMod project, licensed under the
- * GNU Lesser General Public License v3.0
- *
- * Copyright (C) 2026  Fallen_Breath and contributors
- *
- * VillagerRNGDebugMod is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * VillagerRNGDebugMod is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with VillagerRNGDebugMod.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package hackerrouter.villagerrngdebug;
 
 import net.minecraft.world.entity.npc.Villager;
@@ -30,10 +10,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class VillagerRNGTracker {
-    // playerUUID -> villager UUID (persists across chunk reload)
-    private static final Map<UUID, UUID> trackedVillagerUUIDs = new HashMap<>();
-    // playerUUID -> current Villager instance (may become stale after chunk reload)
-    private static final Map<UUID, Villager> trackedVillagers = new HashMap<>();
+    private static final Map<UUID, UUID> trackedVillagerUUIDs = new HashMap<>();  // persists across chunk reload
+    private static final Map<UUID, Villager> trackedVillagers = new HashMap<>();  // may become stale after reload
     private static Field seedField;
 
     static {
@@ -63,10 +41,7 @@ public class VillagerRNGTracker {
         }
     }
 
-    /**
-     * Called from MixinLivingEntity on entity init.
-     * If the new villager's UUID matches a tracked UUID, re-wrap its random and update the instance.
-     */
+    /** Re-wraps random if villager UUID matches a tracked UUID (called on entity init). */
     public static boolean isTrackedByUUID(Villager villager) {
         UUID villagerUUID = villager.getUUID();
         for (Map.Entry<UUID, UUID> entry : trackedVillagerUUIDs.entrySet()) {

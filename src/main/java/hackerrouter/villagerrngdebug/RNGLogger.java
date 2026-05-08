@@ -1,23 +1,3 @@
-/*
- * This file is part of the VillagerRNGDebugMod project, licensed under the
- * GNU Lesser General Public License v3.0
- *
- * Copyright (C) 2026  Fallen_Breath and contributors
- *
- * VillagerRNGDebugMod is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * VillagerRNGDebugMod is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with VillagerRNGDebugMod.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package hackerrouter.villagerrngdebug;
 
 import net.minecraft.network.chat.TextComponent;
@@ -101,7 +81,6 @@ public class RNGLogger {
     public static void setChatLogEnabled(UUID playerUUID, boolean enabled) {
         if (enabled) {
             chatLogEnabledPlayers.add(playerUUID);
-            // Record the game tick when logging is enabled, used for relative timing
             if (server != null) {
                 playerStartTicks.put(playerUUID, server.overworld().getGameTime());
             }
@@ -121,11 +100,9 @@ public class RNGLogger {
             if (chatLogEnabledPlayers.contains(playerUUID)) {
                 Villager tracked = VillagerRNGTracker.getTracked(playerUUID);
                 if (tracked != null && tracked.getUUID().equals(villager.getUUID())) {
-                    // Calculate relative tick (from when logging was enabled)
                     long startTick = playerStartTicks.getOrDefault(playerUUID, gameTick);
                     long relativeTick = gameTick - startTick;
                     
-                    // Use Minecraft's text component system to add color and clickable functionality
                     net.minecraft.network.chat.MutableComponent message = 
                         new TextComponent("[")
                         .append(new TextComponent("T=" + relativeTick).withStyle(style -> style.withColor(net.minecraft.ChatFormatting.AQUA)))

@@ -1,23 +1,3 @@
-/*
- * This file is part of the VillagerRNGDebugMod project, licensed under the
- * GNU Lesser General Public License v3.0
- *
- * Copyright (C) 2026  Fallen_Breath and contributors
- *
- * VillagerRNGDebugMod is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * VillagerRNGDebugMod is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with VillagerRNGDebugMod.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package hackerrouter.villagerrngdebug;
 
 import net.minecraft.ChatFormatting;
@@ -40,7 +20,6 @@ public class FrostWalkLogger {
     private static long startTick = 0;
     private static final Map<BlockPos, FrostIceData> iceBlocks = new HashMap<>();
 
-    // Set during FrostWalkerEnchantment.onEntityMoved to allow MixinServerTickList to record placements
     private static Villager activeVillager = null;
     private static Level activeLevel = null;
 
@@ -59,23 +38,19 @@ public class FrostWalkLogger {
 
     public static boolean isEnabled() { return enabled; }
 
-    /** Called at HEAD of FrostWalkerEnchantment.onEntityMoved */
+    /** Called at HEAD of FrostWalkerEnchantment.onEntityMoved. */
     public static void beginFrostWalk(Villager villager, Level level) {
         activeVillager = villager;
         activeLevel = level;
     }
 
-    /** Called at TAIL of FrostWalkerEnchantment.onEntityMoved */
+    /** Called at TAIL of FrostWalkerEnchantment.onEntityMoved. */
     public static void endFrostWalk() {
         activeVillager = null;
         activeLevel = null;
     }
 
-    /**
-     * Called from MixinServerTickList when scheduleTick(pos, FROSTED_ICE, delay) is invoked.
-     * At this point the nextInt has already been consumed by Mth.nextInt, so
-     * TrackedRandom.lastResult holds the raw nextInt(61) result, and delay = lastResult + 60.
-     */
+    /** Called from MixinServerTickList on scheduleTick(FROSTED_ICE). delay = nextInt(61) + 60. */
     public static void onScheduleFrostedIceTick(BlockPos pos, int delay) {
         if (!enabled || activeVillager == null || activeLevel == null) return;
         if (!(activeVillager.getRandom() instanceof TrackedRandom)) return;
@@ -97,7 +72,7 @@ public class FrostWalkLogger {
         sendToOwner(activeLevel.getServer(), chat);
     }
 
-    /** Called on the first tile tick of a frosted ice block (age == 0 → age 1). */
+    /** Called on first tile tick of a frosted ice block (age 0 → 1). */
     public static void recordFirstTick(BlockPos pos, long currentTick, MinecraftServer server) {
         if (!enabled) return;
         FrostIceData data = iceBlocks.remove(pos);
