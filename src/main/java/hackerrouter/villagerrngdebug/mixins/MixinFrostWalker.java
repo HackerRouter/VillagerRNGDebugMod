@@ -35,14 +35,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FrostWalkerEnchantment.class)
 public class MixinFrostWalker {
-    @Inject(method = "onEntityMoved", at = @At("TAIL"))
-    private static void afterFrostWalk(LivingEntity entity, Level level, BlockPos pos, int enchantLevel, CallbackInfo ci) {
-        if (entity instanceof Villager && VillagerRNGTracker.isTracked((Villager)entity)) {
-            if (entity.getRandom() instanceof TrackedRandom) {
-                int lastResult = ((TrackedRandom)entity.getRandom()).getLastResult();
-                int delay = lastResult + 60;
-                FrostWalkLogger.recordPlacement(pos, level.getGameTime(), delay);
-            }
+    /**
+     * Inject at TAIL. At this point all ice blocks have been placed and all
+     * scheduleTick calls (each consuming one nextInt) have fired.
+     * TrackedRandom records each (pos, delay) pair via onFrostWalkPlacement()
+     * which is called from MixinServerTickList when scheduleTick is invoked
+     * while a frost-walk placement is in progress.
+     *
+     * We set the "active entity" on FrostWalkLogger at HEAD so MixinServerTickList
+     * knows which entity's random to read from.
+     */
+    @Inject(method = "onEntityMoved", at = @At("HEAD"))
+    private static void onFrostWalkHead(LivingEntity entity, Level level, BlockPos pos, int enchantLevel, CallbackInfo ci) {
+        if (!FrostWalkLogger.isEnabled()) return;
+        if (entity instanceof Villager && VillagerRNGTracker.isTracked((Villager) entity)
+                && entity.getRandom() instanceof TrackedRandom) {
+            FrostWalkLogger.beginFrostWalk((Villager) entity, level);
         }
+    }
+
+    @Inject(method = "onEntityMoved", at = @At("TAIL"))
+    private static void onFrostWalkTail(LivingEntity entity, Level level, BlockPos pos, int enchantLevel, CallbackInfo ci) {
+        FrostWalkLogger.endFrostWalk();
     }
 }

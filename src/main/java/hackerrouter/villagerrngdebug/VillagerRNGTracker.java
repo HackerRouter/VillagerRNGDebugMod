@@ -30,6 +30,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class VillagerRNGTracker {
+    // playerUUID -> villager UUID (persists across chunk reload)
+    private static final Map<UUID, UUID> trackedVillagerUUIDs = new HashMap<>();
+    // playerUUID -> current Villager instance (may become stale after chunk reload)
     private static final Map<UUID, Villager> trackedVillagers = new HashMap<>();
     private static Field seedField;
 
@@ -48,32 +51,39 @@ public class VillagerRNGTracker {
 
     public static void setTracked(UUID playerUUID, Villager villager) {
         trackedVillagers.put(playerUUID, villager);
+        trackedVillagerUUIDs.put(playerUUID, villager.getUUID());
         RNGLogger.log(String.format("[TRACK] Player %s now tracking Villager@%s", playerUUID, villager.getUUID()));
     }
 
     public static void clearTracked(UUID playerUUID) {
         Villager villager = trackedVillagers.remove(playerUUID);
+        trackedVillagerUUIDs.remove(playerUUID);
         if (villager != null) {
             RNGLogger.log(String.format("[UNTRACK] Player %s stopped tracking Villager@%s", playerUUID, villager.getUUID()));
         }
     }
 
-    public static boolean isTracked(Villager villager) {
-        if (!villager.isAlive()) {
-            trackedVillagers.values().remove(villager);
-            return false;
+    /**
+     * Called from MixinLivingEntity on entity init.
+     * If the new villager's UUID matches a tracked UUID, re-wrap its random and update the instance.
+     */
+    public static boolean isTrackedByUUID(Villager villager) {
+        UUID villagerUUID = villager.getUUID();
+        for (Map.Entry<UUID, UUID> entry : trackedVillagerUUIDs.entrySet()) {
+            if (villagerUUID.equals(entry.getValue())) {
+                trackedVillagers.put(entry.getKey(), villager);
+                return true;
+            }
         }
+        return false;
+    }
+
+    public static boolean isTracked(Villager villager) {
         return trackedVillagers.containsValue(villager);
     }
 
     public static Villager getTracked(UUID playerUUID) {
-        Villager villager = trackedVillagers.get(playerUUID);
-        if (villager != null && !villager.isAlive()) {
-            trackedVillagers.remove(playerUUID);
-            RNGLogger.log(String.format("[AUTO-UNTRACK] Villager@%s is dead/removed, auto-clearing for player %s", villager.getUUID(), playerUUID));
-            return null;
-        }
-        return villager;
+        return trackedVillagers.get(playerUUID);
     }
 
     public static long getSeed(Random random) {

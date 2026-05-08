@@ -20,24 +20,28 @@
 
 package hackerrouter.villagerrngdebug.mixins;
 
-import hackerrouter.villagerrngdebug.FrostWalkLogger;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.FrostedIceBlock;
-import net.minecraft.world.level.block.state.BlockState;
+import hackerrouter.villagerrngdebug.RandomAccessor;
+import hackerrouter.villagerrngdebug.TrackedRandom;
+import hackerrouter.villagerrngdebug.VillagerRNGTracker;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.npc.Villager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Random;
-
-@Mixin(FrostedIceBlock.class)
-public class MixinFrostedIce {
-    @Inject(method = "tick", at = @At("HEAD"))
-    private void onTick(BlockState state, ServerLevel level, BlockPos pos, Random random, CallbackInfo ci) {
-        if (state.getValue(FrostedIceBlock.AGE) == 0) {
-            FrostWalkLogger.recordFirstTick(pos, level.getGameTime(), level.getServer());
+/**
+ * Injects into Villager.readAdditionalSaveData TAIL.
+ * At this point the entity UUID has been loaded from NBT (via super chain),
+ * so isTrackedByUUID can correctly match and re-wrap the random.
+ */
+@Mixin(Villager.class)
+public class MixinVillagerLoad {
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void onReadNbt(CompoundTag tag, CallbackInfo ci) {
+        Villager villager = (Villager)(Object)this;
+        if (VillagerRNGTracker.isTrackedByUUID(villager) && !(villager.getRandom() instanceof TrackedRandom)) {
+            ((RandomAccessor) villager).setRandom(new TrackedRandom(villager));
         }
     }
 }

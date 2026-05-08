@@ -57,6 +57,9 @@ public class VRNGCommand {
             .then(Commands.literal("set-seed")
                 .then(Commands.argument("seed", StringArgumentType.string())
                     .executes(VRNGCommand::setSeed)))
+            .then(Commands.literal("frosted_ice")
+                .then(Commands.literal("on").executes(VRNGCommand::frostedIceOn))
+                .then(Commands.literal("off").executes(VRNGCommand::frostedIceOff)))
         );
     }
 
@@ -178,14 +181,26 @@ public class VRNGCommand {
     private static int logOn(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         RNGLogger.setChatLogEnabled(player.getUUID(), true);
-        ctx.getSource().sendSuccess(new TextComponent("Chat logging enabled"), false);
+        ctx.getSource().sendSuccess(new TextComponent("VillagerRNGDebug logging enabled"), false);
         return 1;
     }
 
     private static int logOff(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         RNGLogger.setChatLogEnabled(player.getUUID(), false);
-        ctx.getSource().sendSuccess(new TextComponent("Chat logging disabled"), false);
+        ctx.getSource().sendSuccess(new TextComponent("VillagerRNGDebug logging disabled"), false);
+        return 1;
+    }
+
+    private static int frostedIceOn(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        FrostWalkLogger.setEnabled(true, ctx.getSource().getServer(), player.getUUID());
+        return 1;
+    }
+
+    private static int frostedIceOff(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        FrostWalkLogger.setEnabled(false, ctx.getSource().getServer(), player.getUUID());
         return 1;
     }
 }

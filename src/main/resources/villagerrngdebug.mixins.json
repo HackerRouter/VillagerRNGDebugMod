@@ -6,9 +6,11 @@
   "refmap": "villagerrngdebug-refmap.json",
   "mixins": [
     "MixinLivingEntity",
+    "MixinVillagerLoad",
     "MixinCommands",
     "MixinFrostWalker",
     "MixinFrostedIce",
+    "MixinServerTickList",
     "MinecraftServerMixin"
   ],
   "client": [

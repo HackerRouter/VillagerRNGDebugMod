@@ -22,22 +22,20 @@ package hackerrouter.villagerrngdebug.mixins;
 
 import hackerrouter.villagerrngdebug.FrostWalkLogger;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.FrostedIceBlock;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.ServerTickList;
+import net.minecraft.world.level.TickPriority;
+import net.minecraft.world.level.block.Blocks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Random;
-
-@Mixin(FrostedIceBlock.class)
-public class MixinFrostedIce {
-    @Inject(method = "tick", at = @At("HEAD"))
-    private void onTick(BlockState state, ServerLevel level, BlockPos pos, Random random, CallbackInfo ci) {
-        if (state.getValue(FrostedIceBlock.AGE) == 0) {
-            FrostWalkLogger.recordFirstTick(pos, level.getGameTime(), level.getServer());
+@Mixin(ServerTickList.class)
+public class MixinServerTickList {
+    @Inject(method = "scheduleTick(Lnet/minecraft/core/BlockPos;Ljava/lang/Object;ILnet/minecraft/world/level/TickPriority;)V", at = @At("HEAD"))
+    private void onScheduleTick(BlockPos pos, Object type, int delay, TickPriority priority, CallbackInfo ci) {
+        if (type == Blocks.FROSTED_ICE) {
+            FrostWalkLogger.onScheduleFrostedIceTick(pos, delay);
         }
     }
 }
