@@ -83,10 +83,12 @@ public class VillagerRNGTracker {
         if (villager == null) return;
         Random random = villager.getRandom();
         long seed = getSeed(random);
+        // operate on internal seed (XOR with multiplier), then convert back
+        long internal = seed ^ 0x5DEECE66DL;
         for (int i = 0; i < steps; i++) {
-            seed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL;
+            internal = (internal * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL;
         }
-        setSeed(random, seed);
+        setSeed(random, internal ^ 0x5DEECE66DL);
         RNGLogger.log(String.format("[MANIPULATE] Player %s advance +%d  new_seed=0x%012X", playerUUID, steps, seed));
     }
 
@@ -95,10 +97,12 @@ public class VillagerRNGTracker {
         if (villager == null) return false;
         Random random = villager.getRandom();
         long seed = getSeed(random);
+        long internal = seed ^ 0x5DEECE66DL;
+        long targetInternal = targetSeed ^ 0x5DEECE66DL;
         for (int i = 0; i < maxSteps; i++) {
-            seed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL;
-            if (seed == targetSeed) {
-                setSeed(random, seed);
+            internal = (internal * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL;
+            if (internal == targetInternal) {
+                setSeed(random, internal ^ 0x5DEECE66DL);
                 RNGLogger.log(String.format("[MANIPULATE] Player %s advance-to 0x%012X  steps=%d", playerUUID, targetSeed, i + 1));
                 return true;
             }

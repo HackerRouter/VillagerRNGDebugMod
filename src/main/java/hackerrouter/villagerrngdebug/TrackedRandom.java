@@ -69,11 +69,47 @@ public class TrackedRandom extends Random {
                         (methodName.equals("increaseMerchantCareer") || methodName.equals("method_16918"))) {
                         return CallSite.LEVEL_UP_SLOT_SELECT;
                     }
-                    // Brain AI behaviors (path finding, random walk, etc.) — must be before customServerAiStep
+
+                    // Brain AI behaviors — match by intermediary class names
+                    // Brain = class_4095, Behavior = class_4097, Swim = class_4125
+                    // GoalSelector = class_1355, GateBehavior = class_4103
+                    // RandomPos = class_5535, LandRandomPos = class_5534, DefaultRandomPos = class_5532
+                    // HoverRandomPos = class_5533, AirAndWaterRandomPos = class_5530, AirRandomPos = class_5531
+                    // Sensor = class_4148, Sensing = class_1413
+                    // Also match deobfuscated names for dev environment
                     if (className.contains(".ai.behavior.") || className.contains(".ai.util.")
-                            || className.contains(".ai.sensing.") || className.contains(".Brain")) {
+                            || className.contains(".ai.sensing.") || className.contains(".ai.goal.")
+                            || className.contains(".Brain")
+                            || className.contains("class_4095")   // Brain
+                            || className.contains("class_4097")   // Behavior (base class)
+                            || className.contains("class_4103")   // GateBehavior
+                            || className.contains("class_4125")   // Swim
+                            || className.contains("class_5755")   // RandomSwim
+                            || className.contains("class_5535")   // RandomPos
+                            || className.contains("class_5534")   // LandRandomPos
+                            || className.contains("class_5532")   // DefaultRandomPos
+                            || className.contains("class_5533")   // HoverRandomPos
+                            || className.contains("class_5530")   // AirAndWaterRandomPos
+                            || className.contains("class_5531")   // AirRandomPos
+                            || className.contains("class_4148")   // Sensor
+                            || className.contains("class_1413")   // Sensing
+                            || className.contains("class_1355")   // GoalSelector
+                            || className.contains("class_4215")   // BehaviorUtils
+                            || className.contains("class_4143")   // DummySensor
+                            || className.contains("class_4307")   // GolemSensor
+                            || className.contains("class_4256")   // NearestBedSensor
+                            || className.contains("class_4146")   // NearestLivingEntitySensor
+                            || className.contains("class_4147")   // PlayerSensor
+                            || className.contains("class_4221")   // SecondaryPoiSensor
+                            || className.contains("class_4149")   // SensorType
+                            || className.contains("class_4150")   // VillagerHostilesSensor
+                            || className.contains("class_4257")   // VillagerBabiesSensor
+                            ) {
                         return CallSite.BRAIN_AI;
                     }
+
+                    // Villager.customServerAiStep — RAID_CHECK (nextInt(100) == 0)
+                    // This must come AFTER Brain AI check to avoid capturing brain-originated calls
                     if ((className.endsWith(".Villager") || className.endsWith(".class_1646")) &&
                         (methodName.equals("customServerAiStep") || methodName.equals("method_5958"))) {
                         return CallSite.RAID_CHECK;
@@ -101,6 +137,10 @@ public class TrackedRandom extends Random {
                     if ((className.endsWith(".LivingEntity") || className.endsWith(".class_1309")) &&
                         (methodName.equals("spawnSoulSpeedParticle") || methodName.equals("method_25937"))) {
                         return CallSite.SOUL_SPEED_PARTICLE;
+                    }
+                    if ((className.endsWith(".LivingEntity") || className.endsWith(".class_1309")) &&
+                        (methodName.equals("tryAddSoulSpeed") || methodName.equals("method_29502"))) {
+                        return CallSite.SOUL_SPEED_DURABILITY;
                     }
                     if ((className.endsWith(".LivingEntity") || className.endsWith(".class_1309")) &&
                         (methodName.equals("decreaseAirSupply") || methodName.equals("method_6130"))) {
@@ -148,6 +188,8 @@ public class TrackedRandom extends Random {
                     if (methodName.equals("moveTowardsClosestSpace") || methodName.equals("method_30673") || methodName.equals("method_5632")) {
                         return CallSite.STUCK_IN_BLOCK;
                     }
+                    // Mob.baseTick — AMBIENT_SOUND (nextInt(1000))
+                    // Must be AFTER all more specific checks
                     if ((className.endsWith(".Mob") || className.endsWith(".class_1308")) &&
                         (methodName.equals("baseTick") || methodName.equals("method_5670"))) {
                         return CallSite.AMBIENT_SOUND;

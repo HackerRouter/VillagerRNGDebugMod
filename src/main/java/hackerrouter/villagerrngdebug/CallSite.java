@@ -8,6 +8,7 @@ public enum CallSite {
 
     // LivingEntity
     DROWN_BUBBLE, RESPIRATION_ENCHANT, POTION_PARTICLE, SOUL_SPEED_PARTICLE,
+    SOUL_SPEED_DURABILITY,  // tryAddSoulSpeed: nextFloat() < 0.04F for boot damage
     MARK_HURT, VOICE_PITCH, THORNS_SOUND, ENTITY_CRAMMING, EAT_SOUND, EAT_PARTICLE,
 
     // Mob
