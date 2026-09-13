@@ -5,6 +5,13 @@ build/
 out/
 classes/
 
+# logs / jvm
+
+*.log
+logs/
+hs_err_pid*
+replay_pid*
+
 # eclipse
 
 *.launch
@@ -30,4 +37,5 @@ bin/
 
 # fabric
 
+.fabric/
 run/

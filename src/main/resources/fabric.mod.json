@@ -4,12 +4,12 @@
   "version": "${version}",
 
   "name": "${name}",
-  "description": "villagerrngdebug",
+  "description": "oh someone is actually reading this. hi~",
   "authors": [
     "HackerRouter"
   ],
   "contact": {
-    "homepage": "https://modrinth.com",
+    "homepage": "https://github.com/HackerRouter/VillagerRNGDebugMod",
     "sources": "https://github.com/HackerRouter/VillagerRNGDebugMod"
   },
   "license": "LGPL-3.0",

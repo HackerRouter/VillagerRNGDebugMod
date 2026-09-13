@@ -15,6 +15,10 @@
     "MinecraftServerMixin"
   ],
   "client": [
+    "MixinClientPlayNetworkHandler",
+    "MixinClientCommands",
+    "MixinLocalPlayer",
+    "MixinSetTime"
   ],
   "injectors": {
     "defaultRequire": 1

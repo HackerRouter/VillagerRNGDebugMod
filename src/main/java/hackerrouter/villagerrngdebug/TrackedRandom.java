@@ -29,7 +29,7 @@ public class TrackedRandom extends Random {
     }
 
     private CallSite detectCallSite(String method, Object bound) {
-        // Reset counter on new game tick
+        // Reset the per-tick counter.
         long currentTick = owner.level.getGameTime();
         if (currentTick != lastGameTick) {
             lastGameTick = currentTick;
@@ -37,7 +37,7 @@ public class TrackedRandom extends Random {
         }
         tickCallCount++;
 
-        // Walk stack to identify call origin (uses intermediary mappings at runtime)
+        // Detect the call site from the stack (intermediary names at runtime).
         CallSite detected = STACK_WALKER.walk(frames -> {
             java.util.List<StackWalker.StackFrame> frameList = frames.collect(java.util.stream.Collectors.toList());
             java.util.Optional<CallSite> result = frameList.stream()
@@ -49,12 +49,12 @@ public class TrackedRandom extends Random {
                         return (CallSite) null;
                     }
 
-                    // FrostWalkerEnchantment (before Mob.baseTick to avoid misidentification)
+                    // FrostWalkerEnchantment; check before Mob.baseTick.
                     if (className.contains("FrostWalker") || className.contains("class_1887") || className.endsWith(".buk")) {
                         return CallSite.FROST_WALK;
                     }
 
-                    // Villager trade/level-up (before RAID_CHECK)
+                    // Villager trade/level-up; check before RAID_CHECK.
                     if (methodName.equals("getOffer") || methodName.equals("method_7246")) {
                         return CallSite.LEVEL_UP_OFFER_PARAM;
                     }
@@ -70,13 +70,7 @@ public class TrackedRandom extends Random {
                         return CallSite.LEVEL_UP_SLOT_SELECT;
                     }
 
-                    // Brain AI behaviors — match by intermediary class names
-                    // Brain = class_4095, Behavior = class_4097, Swim = class_4125
-                    // GoalSelector = class_1355, GateBehavior = class_4103
-                    // RandomPos = class_5535, LandRandomPos = class_5534, DefaultRandomPos = class_5532
-                    // HoverRandomPos = class_5533, AirAndWaterRandomPos = class_5530, AirRandomPos = class_5531
-                    // Sensor = class_4148, Sensing = class_1413
-                    // Also match deobfuscated names for dev environment
+                    // Brain/behavior classes (deobfuscated or intermediary names).
                     if (className.contains(".ai.behavior.") || className.contains(".ai.util.")
                             || className.contains(".ai.sensing.") || className.contains(".ai.goal.")
                             || className.contains(".Brain")
@@ -108,8 +102,7 @@ public class TrackedRandom extends Random {
                         return CallSite.BRAIN_AI;
                     }
 
-                    // Villager.customServerAiStep — RAID_CHECK (nextInt(100) == 0)
-                    // This must come AFTER Brain AI check to avoid capturing brain-originated calls
+                    // RAID_CHECK; after the Brain/behavior check.
                     if ((className.endsWith(".Villager") || className.endsWith(".class_1646")) &&
                         (methodName.equals("customServerAiStep") || methodName.equals("method_5958"))) {
                         return CallSite.RAID_CHECK;
@@ -162,7 +155,7 @@ public class TrackedRandom extends Random {
                         (methodName.equals("handleEntityEvent") || methodName.equals("method_11148") || methodName.equals("method_5711"))) {
                         return CallSite.THORNS_SOUND;
                     }
-                    // baseTick must be AFTER specific LivingEntity methods
+                    // DROWN_BUBBLE; check after specific LivingEntity methods.
                     if ((className.endsWith(".LivingEntity") || className.endsWith(".class_1309")) &&
                         (methodName.equals("baseTick") || methodName.equals("method_5773"))) {
                         return CallSite.DROWN_BUBBLE;
@@ -188,8 +181,7 @@ public class TrackedRandom extends Random {
                     if (methodName.equals("moveTowardsClosestSpace") || methodName.equals("method_30673") || methodName.equals("method_5632")) {
                         return CallSite.STUCK_IN_BLOCK;
                     }
-                    // Mob.baseTick — AMBIENT_SOUND (nextInt(1000))
-                    // Must be AFTER all more specific checks
+                    // AMBIENT_SOUND; checked last so specific methods win.
                     if ((className.endsWith(".Mob") || className.endsWith(".class_1308")) &&
                         (methodName.equals("baseTick") || methodName.equals("method_5670"))) {
                         return CallSite.AMBIENT_SOUND;
@@ -198,11 +190,7 @@ public class TrackedRandom extends Random {
                 })
                 .filter(site -> site != null)
                 .findFirst();
-            
-            if (!result.isPresent()) {
-                // unknown callsite — silently ignored
-            }
-            
+
             return result.orElse(CallSite.UNKNOWN);
         });
 
@@ -222,7 +210,7 @@ public class TrackedRandom extends Random {
         int result = super.nextInt(bound);
         long seedAfter = VillagerRNGTracker.getSeed(this);
         lastResult = result;
-        // bound=61 → FrostWalkerEnchantment (obfuscated class, matched by parameter signature)
+        // bound == 61 identifies FrostWalkerEnchantment.
         if (bound == 61) {
             Level level = owner.level;
             long gameTick = level.getGameTime();

@@ -56,6 +56,7 @@ dependencies {
 //	autoRuntimeOnly "me.fallenbreath:mixin-auditor:0.2.0-${unobfuscated ? 'u' : 'o'}"
 
 	// dependencies
+	implementation files("${rootProject.projectDir}/libs/latticg.jar")
 //	def fabricApiModules = []
 //	if (mcVersion >= 12105) {  // "fabric-resource-loader-v0" dependency since fabric api 0.117.0 (25w07a, mc1.21.5 snapshot)
 //		fabricApiModules.add("fabric-api-base")
@@ -201,6 +202,10 @@ jar {
 	inputs.property "archives_base_name", project.archives_base_name
 	from(rootProject.file('LICENSE')) {
 		rename { "${it}_${inputs.properties.archives_base_name}" }
+	}
+	// Include LattiCG classes in the jar (fat jar)
+	from(zipTree("${rootProject.projectDir}/libs/latticg.jar")) {
+		exclude 'META-INF/**'
 	}
 }
 

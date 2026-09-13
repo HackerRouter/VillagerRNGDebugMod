@@ -108,7 +108,14 @@ public class VRNGCommand {
         ctx.getSource().sendSuccess(
             new TextComponent("Villager@" + v.getUUID() + " seed=")
                 .append(new TextComponent(String.format("0x%012X", seed))
-                    .withStyle(style -> style.withColor(net.minecraft.ChatFormatting.GOLD))),
+                    .withStyle(style -> style
+                        .withColor(net.minecraft.ChatFormatting.GOLD)
+                        .withClickEvent(new net.minecraft.network.chat.ClickEvent(
+                            net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD,
+                            String.format("0x%012X", seed)))
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(
+                            net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT,
+                            new TextComponent("Click to copy"))))),
             false);
         return 1;
     }
