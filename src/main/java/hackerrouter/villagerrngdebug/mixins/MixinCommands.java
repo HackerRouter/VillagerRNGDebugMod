@@ -2,6 +2,7 @@ package hackerrouter.villagerrngdebug.mixins;
 
 import com.mojang.brigadier.CommandDispatcher;
 import hackerrouter.villagerrngdebug.VRNGCommand;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,7 +16,7 @@ public class MixinCommands {
     @Shadow private CommandDispatcher<CommandSourceStack> dispatcher;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void registerCommands(Commands.CommandSelection selection, CallbackInfo ci) {
+    private void registerCommands(Commands.CommandSelection selection, CommandBuildContext context, CallbackInfo ci) {
         VRNGCommand.register(this.dispatcher);
     }
 }

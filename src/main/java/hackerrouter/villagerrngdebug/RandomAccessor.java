@@ -1,7 +1,7 @@
 package hackerrouter.villagerrngdebug;
 
-import java.util.Random;
+import net.minecraft.util.RandomSource;
 
 public interface RandomAccessor {
-    void setRandom(Random random);
+    void villagerRngDebug$setRandom(RandomSource random);
 }

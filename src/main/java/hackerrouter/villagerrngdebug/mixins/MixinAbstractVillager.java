@@ -1,21 +1,12 @@
 package hackerrouter.villagerrngdebug.mixins;
 
-import hackerrouter.villagerrngdebug.RNGLogger;
-import net.minecraft.world.entity.npc.AbstractVillager;
-import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.npc.WanderingTrader;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
+import net.minecraft.world.item.trading.MerchantOffers;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin({Villager.class, WanderingTrader.class})
-public class MixinAbstractVillager {
-
-    @Inject(method = "updateTrades", at = @At("HEAD"))
-    private void onUpdateTrades(CallbackInfo ci) {
-        if (RNGLogger.isUpdateTradesLogEnabled()) {
-            RNGLogger.logUpdateTradesStack((AbstractVillager) (Object) this);
-        }
-    }
+@Mixin(AbstractVillager.class)
+public abstract class MixinAbstractVillager {
+    @Shadow
+    private MerchantOffers offers;
 }

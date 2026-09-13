@@ -1,4 +1,15 @@
-## VillagerRNGDebugMod for 1.17.1
+## VillagerRNGDebugMod for 1.21.1
+
+Declaration:
+
+I actually have zero idea on what's changed between versions and I believe words down here are actually for 1.17.1
+
+But I am too lazy to wait for my 5 hour GPT plus limit back to let astra do all the correction for me.
+
+So better ask your own AI model in order to know functions.
+
+
+------
 
 Target level after upgrade (1~4, level 5 has no enchanted book): 2
 

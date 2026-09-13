@@ -1,11 +1,15 @@
 package hackerrouter.villagerrngdebug;
 
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.npc.AbstractVillager;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
+import net.minecraft.world.entity.npc.villager.Villager;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,13 +25,10 @@ public class RNGLogger {
 
     public static void log(LivingEntity owner, CallSite site, String method, Object bound, Object result,
                            long seedBefore, long seedAfter, long callCount, long gameTick) {
-        if (owner instanceof Villager) {
-            sendChatLogToTrackers((Villager) owner, gameTick, callCount, method, bound, result, site, seedBefore, seedAfter);
+        if (owner instanceof Villager villager) {
+            sendChatLogToTrackers(villager, gameTick, callCount, method, bound, result, site, seedBefore, seedAfter);
         }
     }
-
-    /** No-op kept for call-site compatibility. */
-    public static void log(String message) {}
 
     public static void setServer(MinecraftServer srv) {
         server = srv;
@@ -77,38 +78,29 @@ public class RNGLogger {
                     long startTick = playerStartTicks.getOrDefault(playerUUID, gameTick);
                     long relativeTick = gameTick - startTick;
 
-                    net.minecraft.network.chat.MutableComponent message =
-                        new TextComponent("[")
-                        .append(new TextComponent("T=" + relativeTick).withStyle(style -> style.withColor(net.minecraft.ChatFormatting.AQUA)))
-                        .append("][")
-                        .append(new TextComponent("#" + String.format("%05d", callCount)).withStyle(style -> style.withColor(net.minecraft.ChatFormatting.YELLOW)))
-                        .append("] ")
-                        .append(new TextComponent(method + "(" + bound + ")=" + result).withStyle(style -> style.withColor(net.minecraft.ChatFormatting.WHITE)))
-                        .append("   src=")
-                        .append(new TextComponent(site.toString()).withStyle(style -> style.withColor(
-                            site == CallSite.UNKNOWN ? net.minecraft.ChatFormatting.RED : net.minecraft.ChatFormatting.GREEN)))
-                        .append("   seed_pre=")
-                        .append(new TextComponent(String.format("0x%012X", seedBefore))
+                    MutableComponent message = Component.literal("[")
+                        .append(Component.literal("T=" + relativeTick).withStyle(style -> style.withColor(ChatFormatting.AQUA)))
+                        .append(Component.literal("]["))
+                        .append(Component.literal("#" + String.format("%05d", callCount)).withStyle(style -> style.withColor(ChatFormatting.YELLOW)))
+                        .append(Component.literal("] "))
+                        .append(Component.literal(method + "(" + bound + ")=" + result).withStyle(style -> style.withColor(ChatFormatting.WHITE)))
+                        .append(Component.literal("   src="))
+                        .append(Component.literal(site.toString()).withStyle(style -> style.withColor(
+                            site == CallSite.UNKNOWN ? ChatFormatting.RED : ChatFormatting.GREEN)))
+                        .append(Component.literal("   seed_pre="))
+                        .append(Component.literal(String.format("0x%012X", seedBefore))
                             .withStyle(style -> style
-                                .withColor(net.minecraft.ChatFormatting.GOLD)
-                                .withClickEvent(new net.minecraft.network.chat.ClickEvent(
-                                    net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD,
-                                    String.format("0x%012X", seedBefore)))
-                                .withHoverEvent(new net.minecraft.network.chat.HoverEvent(
-                                    net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT,
-                                    new TextComponent("Click to copy")))))
-                        .append("  seed_post=")
-                        .append(new TextComponent(String.format("0x%012X", seedAfter))
+                                .withColor(ChatFormatting.GOLD)
+                                .withClickEvent(new ClickEvent.CopyToClipboard(String.format("0x%012X", seedBefore)))
+                                .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to copy")))))
+                        .append(Component.literal("  seed_post="))
+                        .append(Component.literal(String.format("0x%012X", seedAfter))
                             .withStyle(style -> style
-                                .withColor(net.minecraft.ChatFormatting.GOLD)
-                                .withClickEvent(new net.minecraft.network.chat.ClickEvent(
-                                    net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD,
-                                    String.format("0x%012X", seedAfter)))
-                                .withHoverEvent(new net.minecraft.network.chat.HoverEvent(
-                                    net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT,
-                                    new TextComponent("Click to copy")))));
+                                .withColor(ChatFormatting.GOLD)
+                                .withClickEvent(new ClickEvent.CopyToClipboard(String.format("0x%012X", seedAfter)))
+                                .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to copy")))));
 
-                    player.sendMessage(message, playerUUID);
+                    player.sendSystemMessage(message);
                 }
             }
         }

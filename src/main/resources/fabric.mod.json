@@ -4,12 +4,12 @@
   "version": "${version}",
 
   "name": "${name}",
-  "description": "villagerrngdebug",
+  "description": "oh someone is actually reading this. hi~",
   "authors": [
     "HackerRouter"
   ],
   "contact": {
-    "homepage": "https://modrinth.com",
+    "homepage": "https://github.com/HackerRouter/VillagerRNGDebugMod",
     "sources": "https://github.com/HackerRouter/VillagerRNGDebugMod"
   },
   "license": "LGPL-3.0",
@@ -22,12 +22,13 @@
       "hackerrouter.villagerrngdebug.VillagerRNGDebugMod"
     ]
   },
+  "accessWidener": "villagerrngdebug.aw",
   "mixins": [
     "villagerrngdebug.mixins.json"
   ],
 
   "depends": {
-    "fabricloader": ">=0.11.4",
+    "fabricloader": ">=0.16.0",
     "minecraft": "${minecraft_dependency}"
   }
 }

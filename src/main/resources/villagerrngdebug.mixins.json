@@ -1,25 +1,21 @@
 {
   "required": true,
-  "minVersion": "0.8",
   "package": "hackerrouter.villagerrngdebug.mixins",
-  "compatibilityLevel": "{{COMPATIBILITY_LEVEL}}",
-  "refmap": "villagerrngdebug-refmap.json",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "MinecraftServerMixin",
     "MixinAbstractVillager",
-    "MixinLivingEntity",
-    "MixinVillagerLoad",
     "MixinCommands",
-    "MixinFrostWalker",
-    "MixinFrostedIce",
-    "MixinServerTickList",
-    "MinecraftServerMixin"
+    "MixinLivingEntity",
+    "MixinVillagerLoad"
   ],
   "client": [
+    "MixinClientCommands",
+    "MixinClientPlayNetworkHandler",
+    "MixinLocalPlayer",
+    "MixinSetTime"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "overwrites": {
-    "requireAnnotations": true
   }
 }

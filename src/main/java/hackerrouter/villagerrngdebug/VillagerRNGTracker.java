@@ -1,43 +1,28 @@
 package hackerrouter.villagerrngdebug;
 
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class VillagerRNGTracker {
-    private static final Map<UUID, UUID> trackedVillagerUUIDs = new HashMap<>();  // persists across chunk reload
-    private static final Map<UUID, Villager> trackedVillagers = new HashMap<>();  // may become stale after reload
-    private static Field seedField;
-
-    static {
-        try {
-            seedField = Random.class.getDeclaredField("seed");
-            seedField.setAccessible(true);
-        } catch (Exception e) {
-            seedField = null;
-        }
-    }
+    private static final Map<UUID, UUID> trackedVillagerUUIDs = new HashMap<>();
+    private static final Map<UUID, Villager> trackedVillagers = new HashMap<>();
 
     public static void setTracked(UUID playerUUID, Villager villager) {
         trackedVillagers.put(playerUUID, villager);
         trackedVillagerUUIDs.put(playerUUID, villager.getUUID());
-        RNGLogger.log(String.format("[TRACK] Player %s now tracking Villager@%s", playerUUID, villager.getUUID()));
     }
 
     public static void clearTracked(UUID playerUUID) {
-        Villager villager = trackedVillagers.remove(playerUUID);
+        trackedVillagers.remove(playerUUID);
         trackedVillagerUUIDs.remove(playerUUID);
-        if (villager != null) {
-            RNGLogger.log(String.format("[UNTRACK] Player %s stopped tracking Villager@%s", playerUUID, villager.getUUID()));
-        }
     }
 
-    /** Re-wraps random if villager UUID matches a tracked UUID (called on entity init). */
     public static boolean isTrackedByUUID(Villager villager) {
         UUID villagerUUID = villager.getUUID();
         for (Map.Entry<UUID, UUID> entry : trackedVillagerUUIDs.entrySet()) {
@@ -57,45 +42,35 @@ public class VillagerRNGTracker {
         return trackedVillagers.get(playerUUID);
     }
 
-    public static long getSeed(Random random) {
-        if (seedField == null) return 0;
-        try {
-            AtomicLong atomicLong = (AtomicLong) seedField.get(random);
-            return atomicLong.get() ^ 0x5DEECE66DL;
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            return 0;
+    public static long getSeed(RandomSource random) {
+        if (random instanceof LegacyRandomSource legacy) {
+            return legacy.seed.get() ^ 0x5DEECE66DL;
         }
+        return 0;
     }
 
-    public static void setSeed(Random random, long seed) {
-        if (seedField == null) return;
-        try {
-            AtomicLong atomicLong = (AtomicLong) seedField.get(random);
-            atomicLong.set(seed ^ 0x5DEECE66DL);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+    public static void setSeed(RandomSource random, long seed) {
+        if (random instanceof LegacyRandomSource legacy) {
+            legacy.seed.set(seed ^ 0x5DEECE66DL);
         }
     }
 
     public static void advance(UUID playerUUID, int steps) {
         Villager villager = trackedVillagers.get(playerUUID);
         if (villager == null) return;
-        Random random = villager.getRandom();
+        RandomSource random = villager.getRandom();
         long seed = getSeed(random);
-        // operate on internal seed (XOR with multiplier), then convert back
         long internal = seed ^ 0x5DEECE66DL;
         for (int i = 0; i < steps; i++) {
             internal = (internal * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL;
         }
         setSeed(random, internal ^ 0x5DEECE66DL);
-        RNGLogger.log(String.format("[MANIPULATE] Player %s advance +%d  new_seed=0x%012X", playerUUID, steps, seed));
     }
 
     public static boolean advanceTo(UUID playerUUID, long targetSeed, int maxSteps) {
         Villager villager = trackedVillagers.get(playerUUID);
         if (villager == null) return false;
-        Random random = villager.getRandom();
+        RandomSource random = villager.getRandom();
         long seed = getSeed(random);
         long internal = seed ^ 0x5DEECE66DL;
         long targetInternal = targetSeed ^ 0x5DEECE66DL;
@@ -103,19 +78,23 @@ public class VillagerRNGTracker {
             internal = (internal * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL;
             if (internal == targetInternal) {
                 setSeed(random, internal ^ 0x5DEECE66DL);
-                RNGLogger.log(String.format("[MANIPULATE] Player %s advance-to 0x%012X  steps=%d", playerUUID, targetSeed, i + 1));
                 return true;
             }
         }
-        RNGLogger.log(String.format("[MANIPULATE] Player %s advance-to FAILED  target=0x%012X  searched=%d steps", playerUUID, targetSeed, maxSteps));
         return false;
     }
 
+    public static void onTradeUpdate(AbstractVillager villager) {
+        if (RNGLogger.isUpdateTradesLogEnabled()) {
+            RNGLogger.logUpdateTradesStack(villager);
+        }
+    }
+
     public static void wrapRandom(Villager villager) {
-        Random current = villager.getRandom();
+        RandomSource current = villager.getRandom();
         if (!(current instanceof TrackedRandom)) {
-            ((RandomAccessor) villager).setRandom(new TrackedRandom(villager));
-            RNGLogger.log(String.format("[WRAP] Wrapped random for Villager@%s", villager.getUUID()));
+            long seed = getSeed(current);
+            ((RandomAccessor) villager).villagerRngDebug$setRandom(new TrackedRandom(villager, seed));
         }
     }
 }
